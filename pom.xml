@@ -40,6 +40,28 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        
+        <repository>
+          <id>gephi</id>
+          <url>https://raw.github.com/gephi/gephi/mvn-thirdparty-repo/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+        
+        <repository>
+          <id>jzy3d</id>
+          <url>https://maven.jzy3d.org/releases/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
     </repositories>
     
     <!-- Plugin Repositories -->
