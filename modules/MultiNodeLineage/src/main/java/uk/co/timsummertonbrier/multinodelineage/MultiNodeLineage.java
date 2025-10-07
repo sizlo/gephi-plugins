@@ -2,9 +2,11 @@ package uk.co.timsummertonbrier.multinodelineage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.gephi.graph.api.Column;
 import org.gephi.graph.api.DirectedGraph;
 import org.gephi.graph.api.GraphModel;
@@ -18,6 +20,7 @@ public class MultiNodeLineage implements Statistics {
     private Map<String, Lineage> lineages;
     private GraphModel graphModel;
     private DirectedGraph graph;
+    private List<String> errors;
     
     @Override
     public void execute(GraphModel graphModel) {
@@ -29,22 +32,19 @@ public class MultiNodeLineage implements Statistics {
         //  - Test on int id graph
         //  - Test on non-directed graph
         init(graphModel);
+        if (!validate()) {
+            return;
+        }
         originNodeIds.forEach(originNodeId -> calculateLineage(originNodeId));
         recordResultsAsAttributes();
     }
     
     @Override
     public String getReport() {
-        StringBuilder report = new StringBuilder();
-        
-        report.append("<p>Multi Node Lineage has run successfully.</p>\n");
-        report.append("<p>The results have been recorded as new attributes on each Node (see Data Laboratory).</p>\n");
-        
-        lineages.forEach((originNodeId, lineage) -> 
-            report.append(reportSectionForOneOrigin(originNodeId, lineage))
-        );
-        
-        return report.toString();
+        if (errors.isEmpty()) {
+            return getSuccessfulReport();
+        }
+        return getErrorReport();
     }
     
     public void setOriginNodeIds(List<String> originNodeIds) {
@@ -55,6 +55,24 @@ public class MultiNodeLineage implements Statistics {
         this.graphModel = graphModel;
         graph = graphModel.getDirectedGraphVisible();
         lineages = new HashMap<>();
+        errors = new ArrayList<>();
+    }
+    
+    private boolean validate() {
+        Set<String> notFoundNodeIds = new HashSet<>();
+        
+        originNodeIds.forEach(id -> {
+            if (graph.getNode(id) == null) {
+                notFoundNodeIds.add(id);
+            }
+        });
+
+        if (!notFoundNodeIds.isEmpty()) {
+            String notFoundNodeIdsString = notFoundNodeIds.stream().map(id -> "'" + id + "'").collect(Collectors.joining(", "));
+            errors.add("The following requested origin node IDs could not be found in the graph: " + notFoundNodeIdsString);
+        }
+        
+        return errors.isEmpty();
     }
     
     private void calculateLineage(String originNodeId) {
@@ -130,4 +148,25 @@ public class MultiNodeLineage implements Statistics {
             node.setAttribute(listColumnName, existingList + "," + idToAdd);
         }
     }
+
+    private String getSuccessfulReport() {
+        StringBuilder report = new StringBuilder();
+        
+        report.append("<p>Multi Node Lineage has run successfully.</p>\n");
+        report.append("<p>The results have been recorded as new attributes on each Node (see Data Laboratory).</p>\n");
+        
+        lineages.forEach((originNodeId, lineage) -> 
+            report.append(reportSectionForOneOrigin(originNodeId, lineage))
+        );
+        
+        return report.toString();
+    }
+
+    private String getErrorReport() {
+        StringBuilder report = new StringBuilder();
+        report.append("<p>Error running Multi Node Lineage.</p>\n");
+        errors.forEach(error -> report.append("<p>").append(error).append("</p>\n"));
+        return report.toString();
+    }
+
 }
