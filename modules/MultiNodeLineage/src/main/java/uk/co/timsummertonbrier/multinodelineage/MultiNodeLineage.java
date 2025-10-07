@@ -27,8 +27,6 @@ public class MultiNodeLineage implements Statistics {
         // TODO:
         //  - Add validation
         //    - if graph is int id, all ids are ints
-        //    - all ids are present in graph
-        //  - Output error messages to report
         //  - Test on int id graph
         //  - Test on non-directed graph
         init(graphModel);
@@ -59,6 +57,10 @@ public class MultiNodeLineage implements Statistics {
     }
     
     private boolean validate() {
+        if (originNodeIds.isEmpty()) {
+            errors.add("No origin node ID(s) were supplied");
+        }
+        
         Set<String> notFoundNodeIds = new HashSet<>();
         
         originNodeIds.forEach(id -> {

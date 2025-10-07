@@ -3,6 +3,7 @@ package uk.co.timsummertonbrier.multinodelineage;
 
 import java.awt.Dimension;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -20,7 +21,11 @@ public class MultiNodeLineagePanel extends JPanel {
     }
     
     public List<String> getOriginNodeIds() {
-        return Arrays.asList(originNodeIdsTextField.getText().split(","));
+        String allOriginNodeIds = originNodeIdsTextField.getText();
+        if (allOriginNodeIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(allOriginNodeIds.split(","));
     }
     
     private void initComponents() {        
