@@ -14,6 +14,8 @@ import javax.swing.JTextField;
 
 public class MultiNodeLineagePanel extends JPanel {
     
+    private static final long serialVersionUID = 1759842236L;
+    
     private final JTextField originNodeIdsTextField = new JTextField();
     
     public MultiNodeLineagePanel() {

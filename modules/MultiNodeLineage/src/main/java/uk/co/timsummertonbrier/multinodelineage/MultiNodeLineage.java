@@ -102,7 +102,7 @@ public class MultiNodeLineage implements Statistics {
         recreateColumn(table, "DescendantOf", String.class, "");
     }
 
-    private Column recreateColumn(Table table, String name, Class type, Object defaultValue) {
+    private <T> Column recreateColumn(Table table, String name, Class<T> type, Object defaultValue) {
         // Remove existing column to delete the results from previous runs
         if (table.hasColumn(name)) {
             table.removeColumn(name);

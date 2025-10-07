@@ -6,7 +6,7 @@ import org.gephi.graph.api.Node;
 public class GetNodeById {
     
     public static Node getNodeById(DirectedGraph graph, String id) {
-        Class nodeIdType = graph.getModel().getConfiguration().getNodeIdType();
+        var nodeIdType = graph.getModel().getConfiguration().getNodeIdType();
         
         if (nodeIdType == Integer.class) {
             return graph.getNode(Integer.valueOf(id));
