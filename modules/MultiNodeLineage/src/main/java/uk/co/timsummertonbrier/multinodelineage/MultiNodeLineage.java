@@ -60,14 +60,14 @@ public class MultiNodeLineage implements Statistics {
         Set<String> ancestorIds = BreadthFirstSearch.run(
             graph, 
             originNodeId, 
-            (DirectedGraph g, Node n) -> g.getSuccessors(n)
+            (DirectedGraph g, Node n) -> g.getPredecessors(n)
         );
         ancestorIds.remove(originNodeId);
         
         Set<String> descendantIds = BreadthFirstSearch.run(
             graph, 
             originNodeId, 
-            (DirectedGraph g, Node n) -> g.getPredecessors(n)
+            (DirectedGraph g, Node n) -> g.getSuccessors(n)
         );
         descendantIds.remove(originNodeId);
         
