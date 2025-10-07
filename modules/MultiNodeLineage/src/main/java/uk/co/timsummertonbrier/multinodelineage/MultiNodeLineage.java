@@ -2,17 +2,16 @@ package uk.co.timsummertonbrier.multinodelineage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.gephi.graph.api.Column;
 import org.gephi.graph.api.DirectedGraph;
 import org.gephi.graph.api.GraphModel;
 import org.gephi.graph.api.Node;
 import org.gephi.graph.api.Table;
 import org.gephi.statistics.spi.Statistics;
+import static uk.co.timsummertonbrier.multinodelineage.GetNodeById.getNodeById;
 
 public class MultiNodeLineage implements Statistics {
     
@@ -24,11 +23,7 @@ public class MultiNodeLineage implements Statistics {
     
     @Override
     public void execute(GraphModel graphModel) {
-        // TODO:
-        //  - Add validation
-        //    - if graph is int id, all ids are ints
-        //  - Test on int id graph
-        //  - Test on non-directed graph
+        // TODO: Test on non-directed graph
         init(graphModel);
         if (!validate()) {
             return;
@@ -57,23 +52,7 @@ public class MultiNodeLineage implements Statistics {
     }
     
     private boolean validate() {
-        if (originNodeIds.isEmpty()) {
-            errors.add("No origin node ID(s) were supplied");
-        }
-        
-        Set<String> notFoundNodeIds = new HashSet<>();
-        
-        originNodeIds.forEach(id -> {
-            if (graph.getNode(id) == null) {
-                notFoundNodeIds.add(id);
-            }
-        });
-
-        if (!notFoundNodeIds.isEmpty()) {
-            String notFoundNodeIdsString = notFoundNodeIds.stream().map(id -> "'" + id + "'").collect(Collectors.joining(", "));
-            errors.add("The following requested origin node IDs could not be found in the graph: " + notFoundNodeIdsString);
-        }
-        
+        errors.addAll(new MultiNodeLineageValidator(graphModel, graph, originNodeIds).validate());
         return errors.isEmpty();
     }
     
@@ -94,30 +73,21 @@ public class MultiNodeLineage implements Statistics {
         
         lineages.put(originNodeId, new Lineage(ancestorIds, descendantIds));
     }
-    
-    private String reportSectionForOneOrigin(String originNodeId, Lineage lineage) {
-        return String.format(
-            "<p>Node %s has %d ancestors and %d descendants.</p>\n",
-            originNodeId,
-            lineage.getAncestorIds().size(),
-            lineage.getDescendantIds().size()
-        );
-    }
 
     private void recordResultsAsAttributes() {
         setupColumns();
                 
         lineages.forEach((originNodeId, lineage) -> {
-            graph.getNode(originNodeId).setAttribute("IsOrigin", true);
+            getNodeById(graph, originNodeId).setAttribute("IsOrigin", true);
             
             lineage.getAncestorIds().forEach(ancestorId -> {
-                Node ancestorNode = graph.getNode(ancestorId);
+                Node ancestorNode = getNodeById(graph, ancestorId);
                 ancestorNode.setAttribute("IsAncestor", true);
                 addNodeIdToList(ancestorNode, "AncestorOf", originNodeId);
             });
             
             lineage.getDescendantIds().forEach(descendantId -> {
-                Node descendantNode = graph.getNode(descendantId);
+                Node descendantNode = getNodeById(graph, descendantId);
                 descendantNode.setAttribute("IsDescendant", true);
                 addNodeIdToList(descendantNode, "DescendantOf", originNodeId);
             });
@@ -169,6 +139,15 @@ public class MultiNodeLineage implements Statistics {
         report.append("<p>Error running Multi Node Lineage.</p>\n");
         errors.forEach(error -> report.append("<p>").append(error).append("</p>\n"));
         return report.toString();
+    }
+    
+    private String reportSectionForOneOrigin(String originNodeId, Lineage lineage) {
+        return String.format(
+            "<p>Node %s has %d ancestors and %d descendants.</p>\n",
+            originNodeId,
+            lineage.getAncestorIds().size(),
+            lineage.getDescendantIds().size()
+        );
     }
 
 }

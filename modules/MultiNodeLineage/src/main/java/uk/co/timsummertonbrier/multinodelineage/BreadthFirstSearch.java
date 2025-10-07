@@ -6,6 +6,7 @@ import java.util.Queue;
 import java.util.Set;
 import org.gephi.graph.api.DirectedGraph;
 import org.gephi.graph.api.Node;
+import static uk.co.timsummertonbrier.multinodelineage.GetNodeById.getNodeById;
 
 public class BreadthFirstSearch {
     
@@ -17,7 +18,7 @@ public class BreadthFirstSearch {
         Set<String> seenIds = new HashSet<>();
         Queue<Node> queue = new LinkedList<>();
         
-        Node originNode = graph.getNode(originId);
+        Node originNode = getNodeById(graph, originId);
         queue.add(originNode);
         seenIds.add(originId);
         
