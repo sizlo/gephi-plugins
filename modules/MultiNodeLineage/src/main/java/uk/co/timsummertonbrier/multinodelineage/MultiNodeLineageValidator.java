@@ -27,6 +27,7 @@ public class MultiNodeLineageValidator {
     
     public List<String> validate() {
         validateOriginNodeIdsIsNotEmpty();
+        validateGraphIsDirected();
         validateEachNodeId();
         return errors;
     }
@@ -34,6 +35,16 @@ public class MultiNodeLineageValidator {
     private void validateOriginNodeIdsIsNotEmpty() {
         if (originNodeIds.isEmpty()) {
             errors.add("No origin node ID(s) were supplied");
+        }
+    }
+    
+    private void validateGraphIsDirected() {
+        // In testing calculating lineage on undirected graphs does "work", but
+        // it produces confusing results where some nodes are ancestors and some
+        // are descendants. In reality on an undirected graph all connected
+        // nodes should be ancestors and descendants.
+        if (!graphModel.isDirected()) {
+            errors.add("This graph is not directed. Calculating lineage only makes sense on directed graphs.");
         }
     }
     
@@ -74,4 +85,5 @@ public class MultiNodeLineageValidator {
     private String listToString(List<String> list) {
         return list.stream().map(id -> "'" + id + "'").collect(Collectors.joining(", "));
     }
+
 }

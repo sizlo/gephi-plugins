@@ -23,7 +23,6 @@ public class MultiNodeLineage implements Statistics {
     
     @Override
     public void execute(GraphModel graphModel) {
-        // TODO: Test on non-directed graph
         init(graphModel);
         if (!validate()) {
             return;
